@@ -49,28 +49,42 @@ export const NAV_DATA = [
         icon: Icons.User,
         items: [],
       },
-
-    ],
-  },
-  {
-    label: "OTHERS",
-    items: [
-
       {
-        title: "Authentication",
-        icon: Icons.Authentication,
+        title: "Sign In",
+        url: "/auth/sign-in",
         oAuth: true,
-        items: [
-          {
-            title: "Sign In",
-            url: "/auth/sign-in",
-          },
-          {
-            title: "Sign Up",
-            url: "/auth/sign-up",
-          },
-        ],
+        icon: Icons.User,
+        items: [],
       },
+      {
+        title: "Sign Up",
+        url: "/auth/sign-up",
+        oAuth: true,
+        icon: Icons.User,
+        items: [],
+      },
+
     ],
   },
+  // {
+  //   label: "OTHERS",
+  //   items: [
+
+  //     {
+  //       title: "Authentication",
+  //       icon: Icons.Authentication,
+  //       oAuth: true,
+  //       items: [
+  //         {
+  //           title: "Sign In",
+  //           url: "/auth/sign-in",
+  //         },
+  //         {
+  //           title: "Sign Up",
+  //           url: "/auth/sign-up",
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
 ];

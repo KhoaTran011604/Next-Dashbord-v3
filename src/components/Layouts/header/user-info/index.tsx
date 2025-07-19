@@ -81,7 +81,7 @@ export function UserInfo() {
 
         <hr className="border-[#E8E8E8] dark:border-dark-3" />
 
-        <div className="p-2 text-base text-[#4B5563] dark:text-dark-6 [&>*]:cursor-pointer">
+        <div className="space-y-2 p-2 text-base text-[#4B5563] dark:text-dark-6 [&>*]:cursor-pointer">
           <Link
             href={"/profile"}
             onClick={() => setIsOpen(false)}
@@ -124,11 +124,9 @@ export function UserInfo() {
                       queryClient.removeQueries({ queryKey: [key] });
                     },
                   );
-
-                  
                 }
                 Cookies.remove("token_info");
-                  router.replace("/auth/sign-in");
+                router.replace("/auth/sign-in");
               }}
             >
               Log out

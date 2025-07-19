@@ -4,11 +4,12 @@ import { SidebarProvider } from "@/components/Layouts/sidebar/sidebar-context";
 //import { AuthProvider } from "../context/auth";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthProvider } from "@/context/auth";
+import { AuthProvider, useAuth } from "@/context/auth";
+import { useRouter } from "next/navigation";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,6 +24,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       }),
   );
+  // const auth = useAuth();
+  // const router = useRouter();
+  // useEffect(() => {
+  //   if (!auth.isAuthenticated) {
+  //     router.replace("/auth/sign-in");
+  //   }
+  // }, []);
   return (
     <ThemeProvider defaultTheme="light" attribute="class">
       <QueryClientProvider client={queryClient}>
