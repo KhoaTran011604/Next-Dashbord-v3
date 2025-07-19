@@ -68,7 +68,7 @@ const filterInit = {
   pageSize: 10,
   sessionCode: Math.random().toString(),
 };
-const initData = {
+const reviewInit = {
   _id: "",
   productId: "",
   userId: "",
@@ -87,7 +87,7 @@ export default function ReviewList({
   const { isLoading, setIsLoading, openAlert, setOpenAlert, open, setOpen } =
     zustand;
   const [data, setData] = useState([]);
-  const [review, setReview] = useState(initData);
+  const [review, setReview] = useState(reviewInit);
   const [filterPage, setFilterPage] = useState<Filter>(filterInit);
   const [keySearch, setKeySearch] = useState<string>("");
 
@@ -371,7 +371,7 @@ export default function ReviewList({
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setReview(initData);
+                      setReview(reviewInit);
                       setOpen(false);
                     }}
                   >
