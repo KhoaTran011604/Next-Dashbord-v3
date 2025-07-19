@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const vertifyToken = async () => {
     var token_info = getTokensFromCookies();
     if (!token_info) {
+      router.replace("/auth/sign-in");
       return;
     }
     const response = await AuthVertify({});
