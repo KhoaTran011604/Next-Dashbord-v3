@@ -23,7 +23,7 @@ const HD_Input = ({
   hint,
 }: HD_InputProps) => {
   const [value, setValue] = useState<string | number | undefined>(initValue);
-  const formContext = isItemForm ? useFormContext() : null;
+  const formContext = useFormContext();
   const errors = formContext?.formState.errors;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -58,9 +58,7 @@ const HD_Input = ({
           <input
             id={name}
             type={type}
-            {...(isItemForm && formContext != null
-              ? formContext?.register(name)
-              : {})}
+            {...(isItemForm && formContext ? formContext?.register(name) : {})}
             placeholder={placeholder}
             className={cn(
               "h-11 w-full rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary disabled:cursor-default disabled:bg-gray-100 data-[active=true]:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary dark:disabled:bg-gray-800 dark:data-[active=true]:border-primary",

@@ -19,7 +19,7 @@ const HD_TextArea = ({
   onChange,
 }: HD_InputProps) => {
   const [value, setValue] = useState(initValue);
-  const formContext = isItemForm ? useFormContext() : null;
+  const formContext = useFormContext();
   const errors = formContext?.formState.errors;
   const handleChange = (e: any) => {
     setValue(e.target.value);
@@ -47,9 +47,7 @@ const HD_TextArea = ({
           )}
         >
           <textarea
-            {...(isItemForm && formContext != null
-              ? formContext.register(name)
-              : {})}
+            {...(isItemForm && formContext ? formContext.register(name) : {})}
             placeholder={placeholder}
             className={cn(
               "w-full rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary disabled:cursor-default disabled:bg-gray-200 data-[active=true]:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary dark:disabled:bg-dark dark:data-[active=true]:border-primary",
