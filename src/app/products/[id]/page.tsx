@@ -17,6 +17,7 @@ import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
 import { ProductStatus } from "@/enum/productEnum";
 import { productSchema } from "@/shemas/productSchema";
+import { imageProps } from "@/types/MainType";
 import useStore from "@/zustand/store";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -43,10 +44,10 @@ const ProductDetailPage = () => {
   const { setHasDataChanged } = zustand;
 
   const [isBusy, setIsBusy] = useState(false);
-  const [images, setImages] = useState([]);
-  const [deleteImages, setDeleteImages] = useState([]);
+  const [images, setImages] = useState<imageProps[]>([]);
+  const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [errors, setErrors] = useState<string[]>([]);
   const [request, setRequest] = useState(dataInit);
 
   const [categories, setCategories] = useState([

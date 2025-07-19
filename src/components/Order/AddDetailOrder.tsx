@@ -154,7 +154,7 @@ const AddDetailOrder: React.FC<AddDetailOrderProps> = ({
                 }}
                 title={"Product"}
                 name={"ProductId"}
-                defaultValue={request.productId}
+                defaultValue={request.productId || ""}
                 options={products.map((product) => ({
                   label: product.name,
                   value: product._id,
@@ -165,17 +165,17 @@ const AddDetailOrder: React.FC<AddDetailOrderProps> = ({
                     (pro) => pro._id === e.value,
                   );
                   var selectedVariantDefault = {};
-                  if (productSelected.variants) {
+                  if (productSelected && productSelected.variants) {
                     selectedVariantDefault = productSelected.variants[0];
+                    setSeletedProduct(productSelected);
+                    setRequest({
+                      ...request,
+                      productId: e.value,
+                      productName: e.label,
+                      price: productSelected.price,
+                      selectedVariant: selectedVariantDefault,
+                    });
                   }
-                  setSeletedProduct(productSelected);
-                  setRequest({
-                    ...request,
-                    productId: e.value,
-                    productName: e.label,
-                    price: productSelected.price,
-                    selectedVariant: selectedVariantDefault,
-                  });
                 }}
                 className="dark:bg-dark-900"
               />
@@ -298,8 +298,9 @@ const AddDetailOrder: React.FC<AddDetailOrderProps> = ({
                           const productSelected = products.find(
                             (pro) => pro._id === item.productId,
                           );
-                          setSeletedProduct(productSelected);
-                          setRequest(item);
+                          if (productSelected) {
+                            setSeletedProduct(productSelected);
+                          }
                         }}
                       >
                         <td className="px-6 py-4">{item.productName}</td>

@@ -55,7 +55,7 @@ const OrderDetailPage = () => {
   const [images, setImages] = useState<imageProps[]>([]);
   const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [errors, setErrors] = useState<string[]>([]);
   const [request, setRequest] = useState(dataInit);
 
   const SaveData = async () => {
