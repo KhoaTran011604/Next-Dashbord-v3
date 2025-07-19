@@ -24,19 +24,29 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 const TYPE_OF_DATA_IMG_RETURN = "file";
+
+type DetailItem = {
+  id: number | null;
+  productId: string | null;
+  productName: string | null;
+  price: number;
+  quantity: number | string;
+  selectedVariant: any;
+};
+
+interface OrderProps {
+  userId: string;
+  items: DetailItem[];
+  totalAmount: number;
+  status: string;
+  shippingAddress: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  description: string;
+}
+
 const dataInit = {
   userId: "686e42bb5ccd6fd92b45fb47",
-  // items: [
-  //   {
-  //     productId: "68770a775a9224ef5cc5b92b",
-  //     price: 5000,
-  //     quantity: 10,
-  //     selectedVariant: {
-  //       color: "red",
-  //       size: "L",
-  //     },
-  //   },
-  // ],
   items: [],
   totalAmount: 0,
   status: "Pending",
@@ -56,7 +66,7 @@ const OrderDetailPage = () => {
   const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [request, setRequest] = useState(dataInit);
+  const [request, setRequest] = useState<OrderProps>(dataInit);
 
   const SaveData = async () => {
     if (isBusy) {
@@ -302,7 +312,7 @@ const OrderDetailPage = () => {
                   }}
                   title={"Payment Status"}
                   name={"paymentStatus"}
-                  defaultValue={request.paymentStatus}
+                  defaultValue={request.paymentStatus || ""}
                   options={Object.values(PaymentStatus).map((val) => ({
                     label: val,
                     value: val,
