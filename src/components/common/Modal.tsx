@@ -1,6 +1,10 @@
 import { Dialog } from "../ui/dialog";
-
-export function Modal({ open, setOpen, children }) {
+interface ModalProps {
+  open: boolean;
+  setOpen: (status: boolean) => void;
+  children: any;
+}
+export function Modal({ open, setOpen, children }: ModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div>
