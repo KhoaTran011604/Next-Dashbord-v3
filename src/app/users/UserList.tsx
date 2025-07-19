@@ -448,7 +448,7 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
             onDebounce(value);
           }}
         />
-        <Button children={"Add"} onClick={() => router.push("/users/add")} />
+        <Button onClick={() => router.push("/users/add")}>Add</Button>
       </div>
       <div className="space-y-10">
         {isLoading ? (

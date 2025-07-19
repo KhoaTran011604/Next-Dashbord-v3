@@ -47,7 +47,9 @@ const HD_TextArea = ({
           )}
         >
           <textarea
-            {...(isItemForm ? formContext.register(name) : {})}
+            {...(isItemForm && formContext != null
+              ? formContext.register(name)
+              : {})}
             placeholder={placeholder}
             className={cn(
               "w-full rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary disabled:cursor-default disabled:bg-gray-200 data-[active=true]:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary dark:disabled:bg-dark dark:data-[active=true]:border-primary",

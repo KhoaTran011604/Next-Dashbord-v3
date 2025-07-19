@@ -13,7 +13,6 @@ import HD_TextArea from "@/components/common/HD_TextArea";
 import HyperFormWrapper from "@/components/HyperFormWrapper";
 import LottieComponent from "@/components/lotties/lottie";
 import AddDetailOrder from "@/components/Order/AddDetailOrder";
-import AddVariantsOrder from "@/components/Order/AddVariantsOrder";
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
 import OrderStatus, { PaymentStatus } from "@/enum/orderEnum";
@@ -415,7 +414,7 @@ const OrderDetailPage = () => {
               </div>
               <div className="col-span-1 flex justify-end py-2 md:col-span-4">
                 <div>
-                  <Button type="submit" children={"Save"} />
+                  <Button type="submit">Save</Button>
                 </div>
               </div>
             </HyperFormWrapper>

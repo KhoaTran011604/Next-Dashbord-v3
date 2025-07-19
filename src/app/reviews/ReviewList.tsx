@@ -401,12 +401,13 @@ export default function ReviewList({
         />
         <Button
           type="submit"
-          children={"Add"}
           onClick={() => {
             setReview(reviewInit);
             setOpen(true);
           }}
-        />
+        >
+          Add
+        </Button>
       </div>
       <div className="space-y-10">
         {isLoading ? (

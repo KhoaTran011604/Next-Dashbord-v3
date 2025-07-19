@@ -321,11 +321,9 @@ export default function ProductList({
             onDebounce(value);
           }}
         />
-        <Button
-          type="submit"
-          children={"Add"}
-          onClick={() => router.push("/products/add")}
-        />
+        <Button type="submit" onClick={() => router.push("/products/add")}>
+          Add
+        </Button>
       </div>
       <div className="space-y-10">
         {isLoading ? (

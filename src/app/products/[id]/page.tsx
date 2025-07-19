@@ -451,7 +451,7 @@ const ProductDetailPage = () => {
             </div>
             <div className="col-span-1 flex justify-end py-2 md:col-span-4">
               <div>
-                <Button type="submit" children={"Save"} />
+                <Button type="submit">Save</Button>
               </div>
             </div>
           </HyperFormWrapper>

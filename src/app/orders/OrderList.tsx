@@ -326,11 +326,9 @@ export default function OrderList({
             onDebounce(value);
           }}
         />
-        <Button
-          type="submit"
-          children={"Add"}
-          onClick={() => router.push("/orders/add")}
-        />
+        <Button type="submit" onClick={() => router.push("/orders/add")}>
+          Add
+        </Button>
       </div>
       <div className="space-y-10">
         {isLoading ? (

@@ -4,7 +4,6 @@ import { HD_InputProps } from "@/types/MainType";
 import { useEffect, useState, ChangeEvent } from "react";
 import { useFormContext } from "react-hook-form";
 
-
 const HD_Input = ({
   title,
   isItemForm = false,
@@ -53,24 +52,26 @@ const HD_Input = ({
         <div
           className={cn(
             "relative mt-3 [&_svg]:absolute [&_svg]:top-1/2 [&_svg]:-translate-y-1/2",
-            iconPosition === "left" ? "[&_svg]:left-4.5" : "[&_svg]:right-4.5"
+            iconPosition === "left" ? "[&_svg]:left-4.5" : "[&_svg]:right-4.5",
           )}
         >
           <input
             id={name}
             type={type}
-            {...(isItemForm ? formContext?.register(name) : {})}
+            {...(isItemForm && formContext != null
+              ? formContext?.register(name)
+              : {})}
             placeholder={placeholder}
             className={cn(
-              "h-11 w-full rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary disabled:cursor-default disabled:bg-gray-100  data-[active=true]:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary dark:disabled:bg-gray-800 dark:data-[active=true]:border-primary",
+              "h-11 w-full rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary disabled:cursor-default disabled:bg-gray-100 data-[active=true]:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary dark:disabled:bg-gray-800 dark:data-[active=true]:border-primary",
               type === "file"
                 ? getFileStyles(fileStyleVariant as "style1" | "style2")
                 : "px-5.5 py-3 text-dark placeholder:text-dark-6 dark:text-white",
               iconPosition === "left" && "pl-12.5",
-              height === "sm" && "py-2.5"
+              height === "sm" && "py-2.5",
             )}
             disabled={disabled}
-            value={type !== "file" ? value ?? "" : undefined}
+            value={type !== "file" ? (value ?? "") : undefined}
             onChange={handleChange}
           />
           {icon}
@@ -86,8 +87,8 @@ const HD_Input = ({
               error
                 ? "text-red-500"
                 : success
-                ? "text-green-500"
-                : "text-gray-500"
+                  ? "text-green-500"
+                  : "text-gray-500"
             }`}
           >
             {hint}
