@@ -336,7 +336,7 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
       });
   };
 
-  const handleChangeStatus = (_id, status) => {
+  const handleChangeStatus = (_id: string, status: string) => {
     if (isLoading) {
       return;
     }
