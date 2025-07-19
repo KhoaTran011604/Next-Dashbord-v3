@@ -44,7 +44,7 @@ const UserDetailPage = () => {
   const [images, setImages] = useState<imageProps[]>([]);
   const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [errors, setErrors] = useState<string[]>([]);
   const [request, setRequest] = useState(dataInit);
 
   const SaveData = async () => {
@@ -372,7 +372,7 @@ const UserDetailPage = () => {
                     name={"images-upload"}
                     multiple={true}
                     typeDataReturn={TYPE_OF_DATA_IMG_RETURN}
-                    imagesInit={images || []}
+                    imagesInit={images}
                     onUpload={(dataReturn) => {
                       setImages(dataReturn);
                     }}

@@ -1,7 +1,18 @@
 import { useDropzone } from "react-dropzone";
 import React from "react";
 import { imageProps } from "@/types/MainType";
+import { boolean } from "yup";
 
+type TypeDataReturn = "base64String" | "file";
+interface DropzoneComponentV2Props {
+  title: string;
+  name: string;
+  typeDataReturn: TypeDataReturn;
+  multiple?: boolean;
+  readOnly?: boolean;
+  imagesInit: imageProps[];
+  onUpload: (data: imageProps[]) => void;
+}
 const DropzoneComponentV2 = ({
   title = "",
   name,
@@ -10,7 +21,7 @@ const DropzoneComponentV2 = ({
   readOnly = false,
   imagesInit = [],
   onUpload,
-}) => {
+}: DropzoneComponentV2Props) => {
   const [data, setData] = React.useState<imageProps>({
     fileName: "",
     imageBase64String: "",
