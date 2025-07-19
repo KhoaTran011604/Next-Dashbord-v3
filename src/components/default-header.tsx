@@ -6,10 +6,9 @@ import {
   ContextMenuContent,
   ContextMenuTrigger,
 } from "./ui/context-menu";
-import { Task } from "types/MainType";
 
 interface DefaultHeaderProps<T> {
-  info: HeaderContext<Task, T>;
+  info: HeaderContext<any, T>;
   name: string;
   className?: string;
 }
@@ -29,7 +28,7 @@ export function DefaultHeader<TValue>({
           e.preventDefault();
           info.column.toggleSorting(info.column.getIsSorted() === "asc");
         }}
-        className={`w-full h-full flex flex-row items-center justify-start gap-4 cursor-default ${className}`}
+        className={`flex h-full w-full cursor-default flex-row items-center justify-start gap-4 ${className}`}
       >
         {name}
         {sorted === "asc" && <FaSortAlphaDown />}

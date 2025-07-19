@@ -44,7 +44,7 @@ export interface HD_InputProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   initValue?: string | number;
-  onChange?: (value: any) => void;
+  onChange: (value: any) => void;
   oForm_errors?: any[];
   success?: boolean;
   error?: boolean;

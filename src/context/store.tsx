@@ -1,7 +1,7 @@
 "use client";
 
+import { Task } from "@/types/MainType";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Task } from "types/MainType";
 
 type StoreState = {
   user: string | null;

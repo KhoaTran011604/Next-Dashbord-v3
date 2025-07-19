@@ -109,7 +109,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (res.success) {
         //+Vertify true -> pass
         //localStorage.setItem('@accessToken', res.data.accessToken);
-        setUser(getDataFromToken(res.data.accessToken));
+        const dataFromToken = getDataFromToken(res.data.accessToken);
+        if (dataFromToken) {
+          setUser(dataFromToken);
+        }
+
         const encrypted = encryptData({
           accessToken: res.data.accessToken,
           refreshToken,

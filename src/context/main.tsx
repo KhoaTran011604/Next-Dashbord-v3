@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
+import { Task } from "@/types/MainType";
 import React, {
   createContext,
   useContext,
   useState,
   ReactNode,
   useEffect,
-} from 'react';
-import { Task } from 'types/MainType';
+} from "react";
 
 type MainContextType = {
   tasks: Task[];
@@ -21,19 +21,19 @@ type MainContextType = {
 };
 
 export const MainContext = createContext<MainContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const MainProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   useEffect(() => {
-    const stored = localStorage.getItem('#todoList');
+    const stored = localStorage.getItem("#todoList");
 
     if (stored) {
       try {
         setTasks(JSON.parse(stored));
       } catch (e) {
-        console.error('Failed to parse tasks from localStorage');
+        console.error("Failed to parse tasks from localStorage");
       }
     }
   }, []);
@@ -45,12 +45,12 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
   };
   const handleAddTask: (data: Task) => void = (data: Task) => {
     const updateTasks = [...tasks, { ...data, id: Math.random().toString() }];
-    localStorage.setItem('#todoList', JSON.stringify(updateTasks));
+    localStorage.setItem("#todoList", JSON.stringify(updateTasks));
     setTasks(updateTasks);
   };
   const handleUpdateTask: (data: Task) => void = (data: Task) => {
     const updatedList = [...tasks].map((item) =>
-      item._id === data._id ? { ...item, ...data } : item
+      item._id === data._id ? { ...item, ...data } : item,
     );
 
     setTasks(updatedList);
@@ -59,7 +59,7 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
     let updateTasks = [...tasks];
     updateTasks[index].completed = true;
 
-    localStorage.setItem('#todoList', JSON.stringify(updateTasks));
+    localStorage.setItem("#todoList", JSON.stringify(updateTasks));
     setTasks(updateTasks);
   };
 
@@ -67,11 +67,11 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
     const index = tasks.indexOf(dataDelete);
 
     if (index === -1) {
-      alert('Không tìm thấy task cần xóa');
+      alert("Không tìm thấy task cần xóa");
     } else {
       let updateTasks = [...tasks];
       updateTasks.splice(index, 1);
-      localStorage.setItem('#todoList', JSON.stringify(updateTasks));
+      localStorage.setItem("#todoList", JSON.stringify(updateTasks));
       setTasks(updateTasks);
     }
   };
@@ -96,6 +96,6 @@ export const MainProvider = ({ children }: { children: ReactNode }) => {
 export const useMainContext = () => {
   const context = useContext(MainContext);
   if (!context)
-    throw new Error('useMainContext must be used within MainProvider');
+    throw new Error("useMainContext must be used within MainProvider");
   return context;
 };
