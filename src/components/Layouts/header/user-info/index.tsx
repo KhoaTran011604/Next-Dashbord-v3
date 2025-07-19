@@ -125,9 +125,10 @@ export function UserInfo() {
                     },
                   );
 
-                  Cookies.remove("token_info");
-                  router.replace("/auth/sign-in");
+                  
                 }
+                Cookies.remove("token_info");
+                  router.replace("/auth/sign-in");
               }}
             >
               Log out
