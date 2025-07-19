@@ -8,6 +8,9 @@ import HD_Input from "../common/HD_Input";
 import { HD_Button } from "../common/HD_Button";
 import { registerSchema } from "@/shemas/registerSchema";
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
+import { useAuth } from "@/context/auth";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 const initData = {
   fullName: "",
@@ -18,31 +21,51 @@ const initData = {
   remember: false,
 };
 export default function SignupWithPassword() {
+  const auth = useAuth();
+  const router = useRouter();
   const [data, setData] = useState(initData);
-
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    //e.preventDefault();
-
-    // You can remove this code block
+  const Register = async () => {
+    if (loading) {
+      return;
+    }
+    if (data.password !== data.password_again) {
+      toast.error("Password and pasword again don't match !!", {
+        position: "bottom-right",
+      });
+      return;
+    }
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    const res = await auth.register(data);
+    setLoading(false);
+    if (!res) {
+      toast.error("Register Fail !!", {
+        position: "bottom-right",
+      });
+    } else {
+      toast.success(
+        <div onClick={() => router.push("/auth/sign-in")}>
+          <span className="cursor-pointer">
+            Register Success, Sign In now !!
+          </span>
+        </div>,
+        {
+          autoClose: 5000,
+          position: "bottom-right",
+        },
+      );
+      setData(initData);
+      return res;
+    }
   };
-  useEffect(() => {
-    // GetAllTodo({}).then((data) => {
-    //   console.log(data);
-    // });
-  });
+
   return (
     <HyperFormWrapper
       schema={registerSchema}
       defaultValues={initData}
       onSubmit={() => {
-        handleSubmit();
+        Register();
       }}
       className="mx-auto max-w-md"
     >

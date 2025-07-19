@@ -14,6 +14,7 @@ import {
   GetCompletedTodo_WithoutPanigation,
 } from "@/api/todoService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const initData = {
   email: "khoa@gmail.com",
@@ -33,7 +34,9 @@ export default function SigninWithPassword() {
     const res = await auth.login(data);
 
     if (!res.success) {
-      alert("Login fail!!!");
+      toast.error("Login Fail !!", {
+        position: "bottom-right",
+      });
     } else {
       return res;
     }
