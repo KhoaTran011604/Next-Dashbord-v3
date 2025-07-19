@@ -57,6 +57,11 @@ import { Modal } from "@/components/common/Modal";
 
 import HyperFormWrapper from "@/components/HyperFormWrapper";
 import { changePasswordSchema } from "@/shemas/changePasswordSchema";
+interface User {
+  _id: string;
+  name: string;
+  price: number;
+}
 const filterInit = {
   keySearch: "",
   sort: {},
