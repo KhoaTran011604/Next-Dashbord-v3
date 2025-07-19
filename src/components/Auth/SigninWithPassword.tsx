@@ -31,7 +31,6 @@ export default function SigninWithPassword() {
     }
     setLoading(true);
     const res = await auth.login(data);
-    console.log("=====res", res);
 
     if (!res.success) {
       alert("Login fail!!!");
@@ -59,7 +58,7 @@ export default function SigninWithPassword() {
   const mutation = useMutation({
     mutationFn: async () => Login(),
     onSuccess: async (dataLogin) => {
-      if (dataLogin.success) {
+      if (dataLogin && dataLogin.success) {
         const [todos, completed] = await Promise.all([
           GetAllTodo(),
           GetCompletedTodo(),
