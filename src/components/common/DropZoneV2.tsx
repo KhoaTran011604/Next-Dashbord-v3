@@ -1,13 +1,7 @@
 import { useDropzone } from "react-dropzone";
 import React from "react";
+import { imageProps } from "@/types/MainType";
 
-interface imageProps {
-  fileName: string;
-  imageBase64String: string;
-  imageAbsolutePath: string;
-  imageFile: any;
-  isNewUpload: boolean;
-}
 const DropzoneComponentV2 = ({
   title = "",
   name,
@@ -25,13 +19,13 @@ const DropzoneComponentV2 = ({
     isNewUpload: false,
   });
 
-  const [datas, setDatas] = React.useState([]);
+  const [datas, setDatas] = React.useState<imageProps[]>([]);
 
-  const handleImageUpload = (file) => {
+  const handleImageUpload = (file: any) => {
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        var dataUpload = {
+      reader.onload = (e: any) => {
+        var dataUpload: imageProps = {
           fileName: file.name,
           imageBase64String: e.target.result,
           imageAbsolutePath: "",
@@ -46,7 +40,7 @@ const DropzoneComponentV2 = ({
     }
   };
 
-  const onDrop = (acceptedFiles) => {
+  const onDrop = (acceptedFiles: any) => {
     handleImageUpload(acceptedFiles[0]);
   };
 
@@ -67,7 +61,7 @@ const DropzoneComponentV2 = ({
       {title && (
         <label
           htmlFor={name}
-          className="mb-3  block text-sm font-medium text-gray-900 dark:text-white"
+          className="mb-3 block text-sm font-medium text-gray-900 dark:text-white"
         >
           {title}
         </label>
@@ -75,33 +69,31 @@ const DropzoneComponentV2 = ({
       <div>
         {(multiple || (!multiple && datas.length == 0)) && (
           <div
-            className={`transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl ${
+            className={`dark:hover:border-brand-500 cursor-pointer rounded-xl border border-dashed border-gray-300 transition dark:border-gray-700 ${
               !readOnly ? "hover:border-brand-500" : ""
             }`}
           >
             <div
               {...(!readOnly ? getRootProps() : {})}
-              className={`dropzone rounded-xl   border-dashed border-gray-300 p-7 lg:p-10
-        ${
-          isDragActive
-            ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-            : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-        }
-      `}
+              className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10 ${
+                isDragActive
+                  ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+                  : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+              } `}
               id="demo-upload"
             >
               {/* Hidden Input */}
               {!readOnly && (
                 <input
                   {...getInputProps()}
-                  onChange={(e) => handleImageUpload(e.target.files[0])}
+                  onChange={(e: any) => handleImageUpload(e.target.files[0])}
                 />
               )}
 
-              <div className="dz-message flex flex-col items-center m-0!">
+              <div className="dz-message m-0! flex flex-col items-center">
                 {/* Icon Container */}
                 <div className="mb-[22px] flex justify-center">
-                  <div className="flex h-[68px] w-[68px]  items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                  <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
                     <svg
                       className="fill-current"
                       width="29"
@@ -119,17 +111,17 @@ const DropzoneComponentV2 = ({
                 </div>
 
                 {/* Text Content */}
-                <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                <h4 className="text-theme-xl mb-3 font-semibold text-gray-800 dark:text-white/90">
                   {isDragActive && !readOnly
                     ? "Drop Files Here"
                     : "Drag & Drop Files Here"}
                 </h4>
 
-                <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+                <span className="mb-5 block w-full max-w-[290px] text-center text-sm text-gray-700 dark:text-gray-400">
                   Drag and drop your PNG, JPG, WebP, SVG images here or browse
                 </span>
 
-                <span className="font-medium underline text-theme-sm text-brand-500">
+                <span className="text-theme-sm text-brand-500 font-medium underline">
                   Browse File
                 </span>
               </div>

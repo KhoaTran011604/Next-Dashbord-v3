@@ -17,6 +17,7 @@ import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
 import OrderStatus, { PaymentStatus } from "@/enum/orderEnum";
 import { orderSchema } from "@/shemas/orderSchema";
+import { imageProps } from "@/types/MainType";
 import useStore from "@/zustand/store";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -51,8 +52,8 @@ const OrderDetailPage = () => {
   const zustand = useStore();
   const { setHasDataChanged } = zustand;
   const [isBusy, setIsBusy] = useState(false);
-  const [images, setImages] = useState([]);
-  const [deleteImages, setDeleteImages] = useState([]);
+  const [images, setImages] = useState<imageProps[]>([]);
+  const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [errors, setErrors] = useState([]);
   const [request, setRequest] = useState(dataInit);
@@ -197,7 +198,7 @@ const OrderDetailPage = () => {
     });
   };
 
-  const handleDeleteImage = (img) => {
+  const handleDeleteImage = (img: imageProps) => {
     var indexToRemove = images.indexOf(img);
 
     if (indexToRemove != -1) {
@@ -371,7 +372,7 @@ const OrderDetailPage = () => {
                       multiple={true}
                       typeDataReturn={TYPE_OF_DATA_IMG_RETURN}
                       imagesInit={images || []}
-                      onUpload={(dataReturn) => {
+                      onUpload={(dataReturn: imageProps[]) => {
                         setImages(dataReturn);
                       }}
                     />

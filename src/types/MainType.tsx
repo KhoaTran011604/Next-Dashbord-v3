@@ -72,3 +72,11 @@ export interface HD_TableProps {
   viewCallback: (id: string) => void;
   deleteCallback: (item: ItemReturn) => void;
 }
+
+export interface imageProps {
+  fileName: string;
+  imageBase64String: string;
+  imageAbsolutePath: string;
+  imageFile: any;
+  isNewUpload: boolean;
+}

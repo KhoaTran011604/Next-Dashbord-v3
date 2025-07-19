@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { UserStatus } from "@/enum/userEnum";
 import { userSchema } from "@/shemas/userSchema";
 import { userUpdateSchema } from "@/shemas/userUpdateSchema";
+import { imageProps } from "@/types/MainType";
 import useStore from "@/zustand/store";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -40,8 +41,8 @@ const UserDetailPage = () => {
   const zustand = useStore();
   const { setHasDataChanged } = zustand;
   const [isBusy, setIsBusy] = useState(false);
-  const [images, setImages] = useState([]);
-  const [deleteImages, setDeleteImages] = useState([]);
+  const [images, setImages] = useState<imageProps[]>([]);
+  const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [errors, setErrors] = useState([]);
   const [request, setRequest] = useState(dataInit);
@@ -194,7 +195,7 @@ const UserDetailPage = () => {
     });
   };
 
-  const handleDeleteImage = (img) => {
+  const handleDeleteImage = (img: imageProps) => {
     var indexToRemove = images.indexOf(img);
 
     if (indexToRemove != -1) {
