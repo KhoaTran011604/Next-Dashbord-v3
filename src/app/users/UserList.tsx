@@ -109,14 +109,14 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
       .catch((err) => console.log(err))
       .finally(() => setIsLoading(false));
   };
-  const handleViewDetail = (id) => {
+  const handleViewDetail = (id: string) => {
     router.push(`/users/${id}`);
   };
-  const handleDeleteConform = (item) => {
+  const handleDeleteConform = (item: any) => {
     setItemDelete(item);
     setOpenAlert(true);
   };
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     DeleteUser(id, {}).then((res) => {
       if (res.success) {
         LoadData();

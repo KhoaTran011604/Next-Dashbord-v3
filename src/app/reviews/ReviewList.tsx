@@ -155,11 +155,11 @@ export default function ReviewList({
       });
   };
 
-  const handleDeleteConform = (item) => {
+  const handleDeleteConform = (item: any) => {
     setItemDelete(item);
     setOpenAlert(true);
   };
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     DeleteReview(id, {}).then((res) => {
       if (res.success) {
         LoadData();
