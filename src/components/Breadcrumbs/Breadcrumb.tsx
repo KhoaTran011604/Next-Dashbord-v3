@@ -12,7 +12,7 @@ interface BreadcrumbProps {
 const Breadcrumb = ({
   pageName,
   prePageTitle = "Dashboard",
-  preLink = "/",
+  preLink = "/admin",
   hiddenGoBackBtn = true,
 }: BreadcrumbProps) => {
   //const router = useRouter();

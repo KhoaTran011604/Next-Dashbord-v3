@@ -1,10 +1,10 @@
 "use client";
 import { GetAllCategoryFK } from "@/api/categoryService";
 import {
-  SaveProduct_UploadMutli,
-  SeachProduct,
-  UpdateProduct_UploadMutli,
-} from "@/api/productService";
+  SaveUser_UploadMutli,
+  SeachUser,
+  UpdateUser_UploadMutli,
+} from "@/api/userService";
 import { CloseIcon } from "@/assets/icons";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DropzoneComponentV2 from "@/components/common/DropZoneV2";
@@ -12,11 +12,12 @@ import HD_Input from "@/components/common/HD_Input";
 import HD_TextArea from "@/components/common/HD_TextArea";
 import HyperFormWrapper from "@/components/HyperFormWrapper";
 import LottieComponent from "@/components/lotties/lottie";
-import AddVariantsProduct from "@/components/Product/AddVariantsProduct";
+
 import Select from "@/components/Select";
 import { Button } from "@/components/ui/button";
-import { ProductStatus } from "@/enum/productEnum";
-import { productSchema } from "@/shemas/productSchema";
+import { UserStatus } from "@/enum/userEnum";
+import { userSchema } from "@/shemas/userSchema";
+import { userUpdateSchema } from "@/shemas/userUpdateSchema";
 import { imageProps } from "@/types/MainType";
 import useStore from "@/zustand/store";
 import { useParams, useRouter } from "next/navigation";
@@ -25,24 +26,20 @@ import { toast } from "react-toastify";
 
 const TYPE_OF_DATA_IMG_RETURN = "file";
 const dataInit = {
-  name: "",
-  price: 0,
-  discount: 0,
-  status: "InStock", //OutOfStock
-  categoryId: "",
-  categoryName: "",
-  description: "",
-  brand: "",
-  stock: 0,
-  variants: [],
+  fullName: "",
+  email: "",
+  password: "",
+  phone: "",
+  address: "",
+  status: "Active",
+  role: "User",
 };
-const ProductDetailPage = () => {
+const UserDetailPage = () => {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
   const zustand = useStore();
   const { setHasDataChanged } = zustand;
-
   const [isBusy, setIsBusy] = useState(false);
   const [images, setImages] = useState<imageProps[]>([]);
   const [deleteImages, setDeleteImages] = useState<imageProps[]>([]);
@@ -50,20 +47,6 @@ const ProductDetailPage = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [request, setRequest] = useState(dataInit);
 
-  const [categories, setCategories] = useState([
-    {
-      _id: "id-1",
-      name: "Quần áo ",
-    },
-    {
-      _id: "id-2",
-      name: "Quần giày dép ",
-    },
-    {
-      _id: "id-3",
-      name: "Khác",
-    },
-  ]);
   const SaveData = async () => {
     if (isBusy) {
       return;
@@ -85,14 +68,14 @@ const ProductDetailPage = () => {
       };
     }
 
-    SaveProduct_UploadMutli(request_v2)
+    SaveUser_UploadMutli(request_v2)
       .then((response) => {
         if (response.success) {
           setHasDataChanged(true);
           toast.success("Create Success !", {
             position: "bottom-right",
           });
-          router.push("/products");
+          router.push("/users");
         } else {
           toast.error("Create Fail !", {
             position: "bottom-right",
@@ -140,11 +123,11 @@ const ProductDetailPage = () => {
       };
     }
 
-    UpdateProduct_UploadMutli(id, request_v2)
+    UpdateUser_UploadMutli(id, request_v2)
       .then((response) => {
         if (response.success) {
           setHasDataChanged(true);
-          router.push("/products");
+          router.push("/users");
           toast.success("Update Success !", {
             position: "bottom-right",
           });
@@ -160,11 +143,32 @@ const ProductDetailPage = () => {
       });
   };
 
+  // const jsonToFormData = (json) => {
+  //   const formData = new FormData();
+  //   Object.entries(json).forEach(([key, value]) => {
+  //     formData.append(
+  //       key,
+  //       value instanceof Object && !(value instanceof File)
+  //         ? JSON.stringify(value)
+  //         : value
+  //     );
+  //   });
+  //   return formData;
+  // };
   const jsonToFormData = (json: Record<string, any>): FormData => {
     const formData = new FormData();
 
     Object.entries(json).forEach(([key, value]) => {
+      // Bỏ qua nếu là File
       if (value instanceof File) return;
+
+      // // Nếu là object (bao gồm array), stringify
+      // if (value !== null && typeof value === "object") {
+      //   formData.append(key, JSON.stringify(value));
+      // } else {
+      //   // Với string, number, boolean thì append trực tiếp
+      //   formData.append(key, String(value));
+      // }
 
       if (
         typeof value === "string" ||
@@ -183,27 +187,15 @@ const ProductDetailPage = () => {
   };
 
   const LoadData = async () => {
-    SeachProduct(id, {}).then((response) => {
+    SeachUser(id, {}).then((response) => {
       if (response.success) {
         setRequest(response.data);
         setImages(response.data.images);
       }
     });
   };
-  const LoadDataFK = async () => {
-    GetAllCategoryFK({})
-      .then((res) => {
-        if (res.success) {
-          setCategories(res.data);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {});
-  };
 
-  const handleDeleteImage = (img: any) => {
+  const handleDeleteImage = (img: imageProps) => {
     var indexToRemove = images.indexOf(img);
 
     if (indexToRemove != -1) {
@@ -213,9 +205,7 @@ const ProductDetailPage = () => {
       setImages(copyImages);
     }
   };
-
   useEffect(() => {
-    LoadDataFK();
     if (id !== undefined && id !== "add") {
       setIsEdit(true);
       LoadData();
@@ -225,8 +215,8 @@ const ProductDetailPage = () => {
     <div>
       <Breadcrumb
         pageName={id !== "add" ? "Edit" : "Create"}
-        prePageTitle="Products"
-        preLink="/products"
+        prePageTitle="Users"
+        preLink="/admin/users"
         hiddenGoBackBtn={false}
       />
       {isBusy ? (
@@ -234,22 +224,53 @@ const ProductDetailPage = () => {
       ) : (
         <div className="custom-scrollbar min-h-[calc(100vh-180px)] overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
           <HyperFormWrapper
-            schema={productSchema}
+            schema={isEdit ? userUpdateSchema : userSchema}
             defaultValues={request}
             onSubmit={isEdit ? UpdateData : SaveData}
             className="grid grid-cols-1 gap-6 md:grid-cols-4"
           >
-            <div className="col-span-1 md:col-span-2">
+            <div>
               <HD_Input
-                title="Title"
-                name="name"
+                title="Full Name"
+                name="fullName"
                 placeholder=""
                 isItemForm={true}
-                initValue={request.name}
+                initValue={request.fullName}
                 onChange={(value) =>
                   setRequest({
                     ...request,
-                    name: value,
+                    fullName: value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <HD_Input
+                title="Phone"
+                name="phone"
+                placeholder=""
+                isItemForm={true}
+                initValue={request.phone}
+                onChange={(value) =>
+                  setRequest({
+                    ...request,
+                    phone: value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <HD_Input
+                title="Email"
+                name="email"
+                placeholder=""
+                isItemForm={true}
+                initValue={request.email}
+                onChange={(value) =>
+                  setRequest({
+                    ...request,
+                    email: value,
                   })
                 }
               />
@@ -257,147 +278,90 @@ const ProductDetailPage = () => {
             <div>
               <Select
                 {...{
-                  error: errors.includes("categoryName"),
-                  hint: errors.includes("categoryName") ? "Required field" : "",
+                  error: errors.includes("role"),
+                  hint: errors.includes("role") ? "Required field" : "",
                 }}
-                title={"Category"}
-                name={"categoryId"}
-                defaultValue={request.categoryId}
-                options={
-                  categories?.length > 0
-                    ? categories.map((item) => ({
-                        label: item.name,
-                        value: item._id,
-                      }))
-                    : []
-                }
+                title={"Role"}
+                name={"role"}
+                defaultValue={request.role}
+                options={[
+                  {
+                    label: "User",
+                    value: "User",
+                  },
+                  {
+                    label: "Admin",
+                    value: "Admin",
+                  },
+                ]}
                 placeholder="Select an option"
                 onChange={(e) => {
                   setRequest({
                     ...request,
-                    categoryId: e.value,
-                    categoryName: e.label,
+                    role: e.value,
                   });
                 }}
                 className="dark:bg-dark-900"
               />
             </div>
-
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <HD_Input
-                title="Price"
-                name="price"
-                type="number"
+                title="Address"
+                name="address"
                 placeholder=""
                 isItemForm={true}
-                initValue={request.price.toString()}
+                initValue={request.address}
                 onChange={(value) =>
                   setRequest({
                     ...request,
-                    price: parseInt(value),
+                    address: value,
                   })
                 }
               />
             </div>
             <div>
               <HD_Input
-                title="Brand"
-                name="brand"
+                title="Change Password"
+                name="password"
+                type="password"
                 placeholder=""
                 isItemForm={true}
-                initValue={request.brand}
+                initValue={request.password}
                 onChange={(value) =>
                   setRequest({
                     ...request,
-                    brand: value,
+                    password: value,
                   })
                 }
               />
             </div>
             <div>
-              <HD_Input
-                title="Discount"
-                name="discount"
-                type="text"
-                placeholder=""
-                isItemForm={true}
-                initValue={request.discount.toString()}
-                onChange={(value) =>
+              <Select
+                {...{
+                  error: errors.includes("status"),
+                  hint: errors.includes("status") ? "Required field" : "",
+                }}
+                title={"Status"}
+                name={"status"}
+                defaultValue={request.status}
+                options={[
+                  {
+                    label: "Active",
+                    value: "Active",
+                  },
+                  {
+                    label: "UnActive",
+                    value: "UnActive",
+                  },
+                ]}
+                placeholder="Select an option"
+                onChange={(e) => {
                   setRequest({
                     ...request,
-                    discount: parseInt(value),
-                  })
-                }
-              />
-            </div>
-            <div>
-              <HD_Input
-                title="Stock"
-                name="stock"
-                type="number"
-                placeholder=""
-                isItemForm={true}
-                initValue={request.stock.toString()}
-                onChange={(value) =>
-                  setRequest({
-                    ...request,
-                    stock: parseInt(value),
-                  })
-                }
-              />
-            </div>
-            {isEdit && (
-              <div>
-                <Select
-                  {...{
-                    error: errors.includes("status"),
-                    hint: errors.includes("status") ? "Required field" : "",
-                  }}
-                  title={"Status"}
-                  name={"status"}
-                  defaultValue={request.status}
-                  options={Object.values(ProductStatus).map((val) => ({
-                    label: val,
-                    value: val,
-                  }))}
-                  placeholder="Select an option"
-                  onChange={(e) => {
-                    setRequest({
-                      ...request,
-                      status: e.value,
-                    });
-                  }}
-                  className="dark:bg-dark-900"
-                />
-              </div>
-            )}
-            <div className="col-span-1 md:col-span-4">
-              <AddVariantsProduct
-                isEdit={true}
-                initData={request.variants}
-                isConfirm={false}
-                onChange={(res: any) => {
-                  setRequest({
-                    ...request,
-                    variants: res,
+                    status: e.value,
                   });
                 }}
-              />
-            </div>
-
-            <div className="col-span-1 md:col-span-4">
-              <HD_TextArea
-                title="Description"
-                name="description"
-                placeholder=""
-                isItemForm={true}
-                initValue={request.description}
-                onChange={(value: any) =>
-                  setRequest({
-                    ...request,
-                    description: value,
-                  })
-                }
+                className="dark:bg-dark-900"
               />
             </div>
             <div className="col-span-1 md:col-span-4">
@@ -409,7 +373,7 @@ const ProductDetailPage = () => {
                     multiple={true}
                     typeDataReturn={TYPE_OF_DATA_IMG_RETURN}
                     imagesInit={images}
-                    onUpload={(dataReturn: any) => {
+                    onUpload={(dataReturn) => {
                       setImages(dataReturn);
                     }}
                   />
@@ -462,4 +426,4 @@ const ProductDetailPage = () => {
   );
 };
 
-export default ProductDetailPage;
+export default UserDetailPage;

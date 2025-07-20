@@ -5,11 +5,16 @@ import type { NextRequest } from 'next/server'
 
 
 // Mảng các path cần áp dụng middleware
-const protectedRoutes = ['/', '/products', '/orders', '/reviews', '/categories', '/users']
+const protectedRoutes = ['/admin', '/admin/products', '/admin/orders', '/admin/reviews', '/admin/categories', '/admin/users']
 
 export function middleware(request: NextRequest) {
+    console.log("middlware running!!!! ");
+
     const pathname = request.nextUrl.pathname;
     const token = request.cookies.get('token_info')?.value;
+
+    console.log("token_", token);
+
     if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
         return NextResponse.redirect(new URL('/auth/sign-in', request.url));
     }
@@ -18,16 +23,16 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/',
-        '/products',
-        '/products/:path*',
-        '/orders',
-        '/orders/:path*',
-        '/reviews',
-        '/reviews/:path*',
-        '/categories',
-        '/categories/:path*',
-        '/users',
-        '/users/:path*',
+        '/admin',
+        '/admin/products',
+        '/admin/products/:path*',
+        '/admin/orders',
+        '/admin/orders/:path*',
+        '/admin/reviews',
+        '/admin/reviews/:path*',
+        '/admin/categories',
+        '/admin/categories/:path*',
+        '/admin/users',
+        '/admin/users/:path*',
     ],
 }

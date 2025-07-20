@@ -232,7 +232,7 @@ const OrderDetailPage = () => {
       <Breadcrumb
         pageName={id !== "add" ? "Edit" : "Create"}
         prePageTitle="Orders"
-        preLink="/orders"
+        preLink="/admin/orders"
         hiddenGoBackBtn={false}
       />
       {isBusy ? (

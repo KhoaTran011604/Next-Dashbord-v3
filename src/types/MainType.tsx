@@ -80,3 +80,5 @@ export interface imageProps {
   imageFile: any;
   isNewUpload: boolean;
 }
+
+

@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  DeleteCategory,
-  GetAllCategory,
-  SaveCategory,
-  UpdateCategory,
-} from "@/api/categoryService";
+  ChangePassword,
+  ChangeStatus,
+  DeleteUser,
+  GetAllUser,
+} from "@/api/userService";
 import { useRouter } from "next/navigation";
 import useStore from "@/zustand/store";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DefaultHeader from "@/components/default-header";
 import { formatCurrencyVN } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
+import { UserStatus } from "@/enum/userEnum";
 import { PreviewIcon } from "@/components/Tables/icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreVertical } from "lucide-react";
+import HD_HyperTable from "@/components/HD_HyperTable";
+import { AlertModal } from "@/components/common/AlertModal";
 import {
   DialogClose,
   DialogContent,
@@ -40,22 +53,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/styles/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
-import HD_HyperTable from "@/components/HD_HyperTable";
-import { AlertModal } from "@/components/common/AlertModal";
 import { Modal } from "@/components/common/Modal";
+
 import HyperFormWrapper from "@/components/HyperFormWrapper";
-import { categorySchema } from "@/shemas/categorySchema";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-interface Category {
+import { changePasswordSchema } from "@/shemas/changePasswordSchema";
+import Link from "next/link";
+interface User {
   _id: string;
   name: string;
   price: number;
@@ -67,97 +70,60 @@ const filterInit = {
   pageSize: 10,
   sessionCode: Math.random().toString(),
 };
-const categoryInit = { _id: "", name: "" };
-const initData = {
-  name: "",
+const requestInit = {
+  _id: "",
+  password: "",
+  status: "Actice",
 };
-export default function CategoryList({
-  initialCategory,
-}: {
-  initialCategory: Category[];
-}) {
+export default function UserList({ initialUsers }: { initialUsers: User[] }) {
   const router = useRouter();
   const zustand = useStore();
   const queryClient = useQueryClient();
-  const cachedStore = queryClient.getQueryData(["#categoryList"]);
-  const { isLoading, setIsLoading, openAlert, setOpenAlert, open, setOpen } =
-    zustand;
+  const cachedStore = queryClient.getQueryData(["#userList"]);
+  const {
+    isLoading,
+    setIsLoading,
+    open,
+    setOpen,
+    openAlert,
+    setOpenAlert,
+    hasDataChanged,
+    setHasDataChanged,
+  } = zustand;
   const [data, setData] = useState([]);
-  const [category, setCategory] = useState(categoryInit);
   const [filterPage, setFilterPage] = useState<Filter>(filterInit);
   const [keySearch, setKeySearch] = useState<string>("");
-
   const [itemDelete, setItemDelete] = useState({ name: "", _id: "" });
+  const [request, setRequest] = useState(requestInit);
+  console.log(itemDelete);
+
   const LoadData = () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    GetAllCategory(filterPage)
+    GetAllUser(filterPage)
       .then((response) => {
         if (response.success) {
           setData(response.data);
-          queryClient.setQueryData(["#categoryList"], () => {
+          queryClient.setQueryData(["#userList"], () => {
             return response.data; // thêm mới
           });
+          setHasDataChanged(false);
         }
       })
       .catch((err) => console.log(err))
       .finally(() => setIsLoading(false));
   };
-
-  const handleSaveCategory = () => {
-    if (isLoading) {
-      return;
-    }
-    setIsLoading(true);
-
-    SaveCategory({ name: category.name })
-      .then((res) => {
-        if (res.success) {
-          toast.success("Create Success!", {
-            position: "bottom-right",
-          });
-          setOpen(false);
-          LoadData();
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+  const handleViewDetail = (id: string) => {
+    router.push(`/users/${id}`);
   };
-  const handleUpdateCategory = () => {
-    if (isLoading) {
-      return;
-    }
-    setIsLoading(true);
-    UpdateCategory(category._id, category)
-      .then((res) => {
-        if (res.success) {
-          toast.success("Update Success!", {
-            position: "bottom-right",
-          });
-          setOpen(false);
-          LoadData();
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
   const handleDeleteConform = (item: any) => {
     setItemDelete(item);
     setOpenAlert(true);
   };
   const handleDelete = (id: string) => {
-    DeleteCategory(id, {}).then((res) => {
+    DeleteUser(id, {}).then((res) => {
       if (res.success) {
         LoadData();
         toast.success("Delete Success !", {
@@ -169,9 +135,6 @@ export default function CategoryList({
         });
       }
     });
-  };
-  const handleSubmit = () => {
-    category._id.length > 0 ? handleUpdateCategory() : handleSaveCategory();
   };
   const onDebounce = useCallback(
     debounce((term) => {
@@ -204,34 +167,82 @@ export default function CategoryList({
       enableSorting: false,
       enableHiding: false,
     }),
-    columnHelper.accessor("name", {
-      header: (info) => <DefaultHeader info={info} name="Name" />,
-      cell: (info) => info.getValue(),
+    columnHelper.accessor("fullName", {
+      header: (info) => <DefaultHeader info={info} name="Info" />,
+      cell: (info) => {
+        return (
+          <div className="flex min-w-fit items-center justify-start gap-3">
+            {/* <img
+              src={
+                info.row.original.images.length > 0
+                  ? info.row.original.images[0].imageAbsolutePath
+                  : "/images/empty.png"
+              }
+              loading="lazy"
+              className="aspect-[6/5] w-15 rounded-[5px] object-cover"
+              width={60}
+              height={50}
+              alt={"Image for user " + info.row.original.name}
+              role="presentation"
+            /> */}
+            <div>{info.row.original.fullName}</div>
+          </div>
+        );
+      },
+    }),
+    columnHelper.accessor("phone", {
+      header: (info) => <DefaultHeader info={info} name="Phone" />,
+      cell: (info) => {
+        return info.getValue() || "_";
+      },
+    }),
+    columnHelper.accessor("role", {
+      header: (info) => <DefaultHeader info={info} name="Role" />,
+      cell: (info) => {
+        return info.getValue() || "_";
+      },
     }),
 
+    columnHelper.accessor("status", {
+      header: (info) => <DefaultHeader info={info} name="Status" />,
+      cell: (info) => {
+        return (
+          <div
+            className={cn(
+              "max-w-fit rounded-full px-3.5 py-1 text-sm font-medium",
+              {
+                "bg-[#219653]/[0.08] text-[#219653]":
+                  info.row.original.status === UserStatus.active,
+                "bg-[#D34053]/[0.08] text-[#D34053]":
+                  info.row.original.status === UserStatus.unAcitive,
+              },
+            )}
+          >
+            {info.row.original.status}
+          </div>
+        );
+      },
+    }),
     columnHelper.display({
       id: "actions",
       enableSorting: false,
       header: (info) => <DefaultHeader info={info} name="Actions" />,
       cell: ({ row }) => (
         <div className="flex items-center justify-start gap-x-3.5">
-          <button
+          <Link
+            href={"/admin/users/" + row.original._id}
             className="hover:text-primary"
-            onClick={() => {
-              setCategory(row.original);
-              setOpen(true);
-            }}
           >
             <span className="sr-only">View Invoice</span>
             <PreviewIcon />
-          </button>
+          </Link>
 
           <button
             className="hover:text-primary"
             onClick={() => {
               handleDeleteConform({
                 _id: row.original._id,
-                name: row.original.name,
+                name: row.original.fullName,
               });
             }}
           >
@@ -257,15 +268,35 @@ export default function CategoryList({
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <Link className="px-2" href={"/admin/users/" + row.original._id}>
+              Detail
+            </Link>
             <DropdownMenuItem
+              className="cursor-pointer"
               onClick={() => {
-                setCategory(row.original);
+                setRequest(row.original);
                 setOpen(true);
               }}
             >
-              Detail
+              Change Password
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {
+                handleChangeStatus(
+                  row.original._id,
+                  row.original.status === UserStatus.active
+                    ? UserStatus.unAcitive
+                    : UserStatus.active,
+                );
+              }}
+            >
+              {row.original.status === UserStatus.active
+                ? UserStatus.unAcitive
+                : UserStatus.active}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
               onClick={() => {
                 handleDeleteConform({
                   _id: row.original._id,
@@ -283,27 +314,68 @@ export default function CategoryList({
     }),
   ];
 
+  const handleChangePassword = () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+
+    ChangePassword(request._id, { password: request.password })
+      .then((res) => {
+        if (res.success) {
+          toast.success("Change Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  const handleChangeStatus = (_id: string, status: string) => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+
+    ChangeStatus(_id, {
+      status,
+    })
+      .then((res) => {
+        if (res.success) {
+          toast.success("Change Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
   const isFirstLoad = useRef(true); // 👈 đánh dấu lần render đầu tiên
-
-  // useEffect(() => {
-  //   if (!isFirstLoad.current && !isEqual(filterPage, filterInit)) {
-  //     LoadData();
-  //   } else {
-  //     cachedStore ? setData(cachedStore as any) : LoadData();
-  //     isFirstLoad.current = false;
-  //     return;
-  //   }
-  //   // Sau lần đầu tiên render
-  // }, [filterPage]);
-
   useEffect(() => {
-    if (!isFirstLoad.current && !isEqual(filterPage, filterInit)) {
+    if (
+      (!isFirstLoad.current && !isEqual(filterPage, filterInit)) ||
+      (!isFirstLoad.current && hasDataChanged)
+    ) {
       LoadData();
     } else {
       cachedStore ? setData(cachedStore as any) : LoadData();
       isFirstLoad.current = false;
+      return;
     }
-  }, [filterPage, cachedStore]);
+  }, [filterPage]);
 
   return (
     <div>
@@ -323,37 +395,32 @@ export default function CategoryList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertModal>
+
       <Modal open={open} setOpen={setOpen}>
         <DialogContent className="bg-white dark:bg-gray-800 sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {category._id.length > 0 ? "Update Category" : "Add Category"}
-            </DialogTitle>
-            {/* <DialogDescription>
-                                Make changes to your profile here. Click save when you&apos;re
-                                done.
-                            </DialogDescription> */}
+            <DialogTitle>{"Update Password"}</DialogTitle>
           </DialogHeader>
           <div className="">
             <HyperFormWrapper
-              schema={categorySchema}
-              defaultValues={category}
-              onSubmit={(e) => {
-                handleSubmit();
+              schema={changePasswordSchema}
+              defaultValues={request}
+              onSubmit={() => {
+                handleChangePassword();
               }}
               className="mx-auto max-w-md"
             >
               <HD_Input
-                title="Name"
-                name="name"
-                placeholder="Press category name"
+                title="Password"
+                name="password"
+                placeholder="Press password"
                 type="text"
                 isItemForm={true}
-                initValue={category.name}
+                initValue={request.password}
                 onChange={(value) =>
-                  setCategory({
-                    ...category,
-                    name: value,
+                  setRequest({
+                    ...request,
+                    password: value,
                   })
                 }
               />
@@ -362,16 +429,14 @@ export default function CategoryList({
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setCategory(categoryInit);
+                      setRequest(requestInit);
                       setOpen(false);
                     }}
                   >
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" onClick={() => {}}>
-                  {category._id.length > 0 ? "Update" : "Add"}
-                </Button>
+                <Button type="submit">{"Save"}</Button>
               </DialogFooter>
             </HyperFormWrapper>
           </div>
@@ -390,15 +455,12 @@ export default function CategoryList({
             onDebounce(value);
           }}
         />
-        <Button
-          type="submit"
-          onClick={() => {
-            setCategory(categoryInit);
-            setOpen(true);
-          }}
+        <Link
+          href={"/admin/users/add"}
+          className="rounded-md bg-primary px-4 py-2 text-white"
         >
           Add
-        </Button>
+        </Link>
       </div>
       <div className="space-y-10">
         {isLoading ? (
@@ -408,10 +470,9 @@ export default function CategoryList({
             <HD_HyperTable
               datas={data}
               columns={columns}
-              onRowDoubleClick={(item: any) => {
-                setCategory(item);
-                setOpen(true);
-              }}
+              onRowDoubleClick={(item: any) =>
+                router.push(`/users/${item._id}`)
+              }
             />
             {!isLoading && (
               // <MyPagination

@@ -24,13 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       }),
   );
-  // const auth = useAuth();
-  // const router = useRouter();
-  // useEffect(() => {
-  //   if (!auth.isAuthenticated) {
-  //     router.replace("/auth/sign-in");
-  //   }
-  // }, []);
+
   return (
     <ThemeProvider defaultTheme="light" attribute="class">
       <QueryClientProvider client={queryClient}>

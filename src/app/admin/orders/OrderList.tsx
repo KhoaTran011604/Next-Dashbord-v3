@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
 import HD_HyperTable from "@/components/HD_HyperTable";
 import { AlertModal } from "@/components/common/AlertModal";
+import Link from "next/link";
 interface Order {
   _id: string;
   name: string;
@@ -218,13 +219,13 @@ export default function OrderList({
       header: (info) => <DefaultHeader info={info} name="Actions" />,
       cell: ({ row }) => (
         <div className="flex items-center justify-start gap-x-3.5">
-          <button
+          <Link
+            href={"/admin/orders/" + row.original._id}
             className="hover:text-primary"
-            onClick={() => handleViewDetail(row.original._id)}
           >
             <span className="sr-only">View Invoice</span>
             <PreviewIcon />
-          </button>
+          </Link>
 
           <button
             className="hover:text-primary"
@@ -257,12 +258,11 @@ export default function OrderList({
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => handleViewDetail(row.original._id)}
-            >
-              Detail
+            <DropdownMenuItem>
+              <Link href={"/admin/orders/" + row.original._id}>Detail</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="cursor-pointer"
               onClick={() => {
                 handleDeleteConform({
                   _id: row.original._id,
@@ -326,9 +326,13 @@ export default function OrderList({
             onDebounce(value);
           }}
         />
-        <Button type="submit" onClick={() => router.push("/orders/add")}>
+
+        <Link
+          href={"/admin/orders/add"}
+          className="rounded-md bg-primary px-4 py-2 text-white"
+        >
           Add
-        </Button>
+        </Link>
       </div>
       <div className="space-y-10">
         {isLoading ? (

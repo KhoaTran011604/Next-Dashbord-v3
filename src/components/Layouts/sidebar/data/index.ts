@@ -7,71 +7,72 @@ export const NAV_DATA = [
       {
         title: "Dashboard",
         icon: Icons.HomeIcon,
+        oAuth: false,
         items: [
           {
             title: "eCommerce",
-            url: "/",
+            url: "/admin",
           },
         ],
       },
       {
         title: "Products",
-        url: "/products",
+        url: "/admin/products",
         oAuth: false,
         icon: Icons.FourCircle,
         items: [],
       },
       {
         title: "Categories",
-        url: "/categories",
+        url: "/admin/categories",
         oAuth: false,
         icon: Icons.Alphabet,
         items: [],
       },
       {
         title: "Orders",
-        url: "/orders",
+        url: "/admin/orders",
         oAuth: false,
         icon: Icons.Table,
         items: [],
       },
       {
         title: "Reviews",
-        url: "/reviews",
+        url: "/admin/reviews",
         oAuth: false,
         icon: Icons.User,
         items: [],
       },
       {
         title: "Users",
-        url: "/users",
+        url: "/admin/users",
         oAuth: false,
         icon: Icons.User,
         items: [],
       },
-      
+
 
     ],
   },
-   {
+  {
     label: "OTHERS",
-     items: [
+    items: [
 
-       {
-         title: "Authentication",
-         icon: Icons.Authentication,
-         oAuth: true,
-         items: [
-           {
-             title: "Sign In",
-             url: "/auth/sign-in",
-           },
-           {
-             title: "Sign Up",
-             url: "/auth/sign-up",
-           },
-         ],
-       },
-     ],
-   },
+      {
+        title: "Authentication",
+        icon: Icons.Authentication,
+        oAuth: true,
+        items: [
+          {
+            title: "Sign In",
+            url: "/auth/sign-in",
+          },
+          {
+            title: "Sign Up",
+            url: "/auth/sign-up",
+          },
+        ],
+      },
+    ],
+  },
 ];

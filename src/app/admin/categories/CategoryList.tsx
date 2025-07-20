@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChangePassword,
-  ChangeStatus,
-  DeleteUser,
-  GetAllUser,
-} from "@/api/userService";
+  DeleteCategory,
+  GetAllCategory,
+  SaveCategory,
+  UpdateCategory,
+} from "@/api/categoryService";
 import { useRouter } from "next/navigation";
 import useStore from "@/zustand/store";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,20 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DefaultHeader from "@/components/default-header";
 import { formatCurrencyVN } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
-import { UserStatus } from "@/enum/userEnum";
 import { PreviewIcon } from "@/components/Tables/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
-import HD_HyperTable from "@/components/HD_HyperTable";
-import { AlertModal } from "@/components/common/AlertModal";
 import {
   DialogClose,
   DialogContent,
@@ -53,11 +40,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/styles/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { MoreVertical } from "lucide-react";
+import HD_HyperTable from "@/components/HD_HyperTable";
+import { AlertModal } from "@/components/common/AlertModal";
 import { Modal } from "@/components/common/Modal";
-
 import HyperFormWrapper from "@/components/HyperFormWrapper";
-import { changePasswordSchema } from "@/shemas/changePasswordSchema";
-interface User {
+import { categorySchema } from "@/shemas/categorySchema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+interface Category {
   _id: string;
   name: string;
   price: number;
@@ -69,60 +67,97 @@ const filterInit = {
   pageSize: 10,
   sessionCode: Math.random().toString(),
 };
-const requestInit = {
-  _id: "",
-  password: "",
-  status: "Actice",
+const categoryInit = { _id: "", name: "" };
+const initData = {
+  name: "",
 };
-export default function UserList({ initialUsers }: { initialUsers: User[] }) {
+export default function CategoryList({
+  initialCategory,
+}: {
+  initialCategory: Category[];
+}) {
   const router = useRouter();
   const zustand = useStore();
   const queryClient = useQueryClient();
-  const cachedStore = queryClient.getQueryData(["#userList"]);
-  const {
-    isLoading,
-    setIsLoading,
-    open,
-    setOpen,
-    openAlert,
-    setOpenAlert,
-    hasDataChanged,
-    setHasDataChanged,
-  } = zustand;
+  const cachedStore = queryClient.getQueryData(["#categoryList"]);
+  const { isLoading, setIsLoading, openAlert, setOpenAlert, open, setOpen } =
+    zustand;
   const [data, setData] = useState([]);
+  const [category, setCategory] = useState(categoryInit);
   const [filterPage, setFilterPage] = useState<Filter>(filterInit);
   const [keySearch, setKeySearch] = useState<string>("");
-  const [itemDelete, setItemDelete] = useState({ name: "", _id: "" });
-  const [request, setRequest] = useState(requestInit);
-  console.log(itemDelete);
 
+  const [itemDelete, setItemDelete] = useState({ name: "", _id: "" });
   const LoadData = () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    GetAllUser(filterPage)
+    GetAllCategory(filterPage)
       .then((response) => {
         if (response.success) {
           setData(response.data);
-          queryClient.setQueryData(["#userList"], () => {
+          queryClient.setQueryData(["#categoryList"], () => {
             return response.data; // thêm mới
           });
-          setHasDataChanged(false);
         }
       })
       .catch((err) => console.log(err))
       .finally(() => setIsLoading(false));
   };
-  const handleViewDetail = (id: string) => {
-    router.push(`/users/${id}`);
+
+  const handleSaveCategory = () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+
+    SaveCategory({ name: category.name })
+      .then((res) => {
+        if (res.success) {
+          toast.success("Create Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
+  const handleUpdateCategory = () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    UpdateCategory(category._id, category)
+      .then((res) => {
+        if (res.success) {
+          toast.success("Update Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   const handleDeleteConform = (item: any) => {
     setItemDelete(item);
     setOpenAlert(true);
   };
   const handleDelete = (id: string) => {
-    DeleteUser(id, {}).then((res) => {
+    DeleteCategory(id, {}).then((res) => {
       if (res.success) {
         LoadData();
         toast.success("Delete Success !", {
@@ -134,6 +169,9 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
         });
       }
     });
+  };
+  const handleSubmit = () => {
+    category._id.length > 0 ? handleUpdateCategory() : handleSaveCategory();
   };
   const onDebounce = useCallback(
     debounce((term) => {
@@ -166,62 +204,11 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
       enableSorting: false,
       enableHiding: false,
     }),
-    columnHelper.accessor("fullName", {
-      header: (info) => <DefaultHeader info={info} name="Info" />,
-      cell: (info) => {
-        return (
-          <div className="flex min-w-fit items-center justify-start gap-3">
-            {/* <img
-              src={
-                info.row.original.images.length > 0
-                  ? info.row.original.images[0].imageAbsolutePath
-                  : "/images/empty.png"
-              }
-              loading="lazy"
-              className="aspect-[6/5] w-15 rounded-[5px] object-cover"
-              width={60}
-              height={50}
-              alt={"Image for user " + info.row.original.name}
-              role="presentation"
-            /> */}
-            <div>{info.row.original.fullName}</div>
-          </div>
-        );
-      },
-    }),
-    columnHelper.accessor("phone", {
-      header: (info) => <DefaultHeader info={info} name="Phone" />,
-      cell: (info) => {
-        return info.getValue() || "_";
-      },
-    }),
-    columnHelper.accessor("role", {
-      header: (info) => <DefaultHeader info={info} name="Role" />,
-      cell: (info) => {
-        return info.getValue() || "_";
-      },
+    columnHelper.accessor("name", {
+      header: (info) => <DefaultHeader info={info} name="Name" />,
+      cell: (info) => info.getValue(),
     }),
 
-    columnHelper.accessor("status", {
-      header: (info) => <DefaultHeader info={info} name="Status" />,
-      cell: (info) => {
-        return (
-          <div
-            className={cn(
-              "max-w-fit rounded-full px-3.5 py-1 text-sm font-medium",
-              {
-                "bg-[#219653]/[0.08] text-[#219653]":
-                  info.row.original.status === UserStatus.active,
-                "bg-[#D34053]/[0.08] text-[#D34053]":
-                  info.row.original.status === UserStatus.unAcitive,
-              },
-            )}
-          >
-            {info.row.original.status}
-          </div>
-        );
-      },
-    }),
     columnHelper.display({
       id: "actions",
       enableSorting: false,
@@ -230,7 +217,10 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
         <div className="flex items-center justify-start gap-x-3.5">
           <button
             className="hover:text-primary"
-            onClick={() => handleViewDetail(row.original._id)}
+            onClick={() => {
+              setCategory(row.original);
+              setOpen(true);
+            }}
           >
             <span className="sr-only">View Invoice</span>
             <PreviewIcon />
@@ -241,7 +231,7 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
             onClick={() => {
               handleDeleteConform({
                 _id: row.original._id,
-                name: row.original.fullName,
+                name: row.original.name,
               });
             }}
           >
@@ -268,33 +258,16 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => handleViewDetail(row.original._id)}
+              className="cursor-pointer"
+              onClick={() => {
+                setCategory(row.original);
+                setOpen(true);
+              }}
             >
               Detail
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                setRequest(row.original);
-                setOpen(true);
-              }}
-            >
-              Change Password
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                handleChangeStatus(
-                  row.original._id,
-                  row.original.status === UserStatus.active
-                    ? UserStatus.unAcitive
-                    : UserStatus.active,
-                );
-              }}
-            >
-              {row.original.status === UserStatus.active
-                ? UserStatus.unAcitive
-                : UserStatus.active}
-            </DropdownMenuItem>
-            <DropdownMenuItem
+              className="cursor-pointer"
               onClick={() => {
                 handleDeleteConform({
                   _id: row.original._id,
@@ -312,68 +285,27 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
     }),
   ];
 
-  const handleChangePassword = () => {
-    if (isLoading) {
-      return;
-    }
-    setIsLoading(true);
-
-    ChangePassword(request._id, { password: request.password })
-      .then((res) => {
-        if (res.success) {
-          toast.success("Change Success!", {
-            position: "bottom-right",
-          });
-          setOpen(false);
-          LoadData();
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
-  const handleChangeStatus = (_id: string, status: string) => {
-    if (isLoading) {
-      return;
-    }
-    setIsLoading(true);
-
-    ChangeStatus(_id, {
-      status,
-    })
-      .then((res) => {
-        if (res.success) {
-          toast.success("Change Success!", {
-            position: "bottom-right",
-          });
-          setOpen(false);
-          LoadData();
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
   const isFirstLoad = useRef(true); // 👈 đánh dấu lần render đầu tiên
+
+  // useEffect(() => {
+  //   if (!isFirstLoad.current && !isEqual(filterPage, filterInit)) {
+  //     LoadData();
+  //   } else {
+  //     cachedStore ? setData(cachedStore as any) : LoadData();
+  //     isFirstLoad.current = false;
+  //     return;
+  //   }
+  //   // Sau lần đầu tiên render
+  // }, [filterPage]);
+
   useEffect(() => {
-    if (
-      (!isFirstLoad.current && !isEqual(filterPage, filterInit)) ||
-      (!isFirstLoad.current && hasDataChanged)
-    ) {
+    if (!isFirstLoad.current && !isEqual(filterPage, filterInit)) {
       LoadData();
     } else {
       cachedStore ? setData(cachedStore as any) : LoadData();
       isFirstLoad.current = false;
-      return;
     }
-  }, [filterPage]);
+  }, [filterPage, cachedStore]);
 
   return (
     <div>
@@ -393,32 +325,37 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertModal>
-
       <Modal open={open} setOpen={setOpen}>
         <DialogContent className="bg-white dark:bg-gray-800 sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{"Update Password"}</DialogTitle>
+            <DialogTitle>
+              {category._id.length > 0 ? "Update Category" : "Add Category"}
+            </DialogTitle>
+            {/* <DialogDescription>
+                                Make changes to your profile here. Click save when you&apos;re
+                                done.
+                            </DialogDescription> */}
           </DialogHeader>
           <div className="">
             <HyperFormWrapper
-              schema={changePasswordSchema}
-              defaultValues={request}
-              onSubmit={() => {
-                handleChangePassword();
+              schema={categorySchema}
+              defaultValues={category}
+              onSubmit={(e) => {
+                handleSubmit();
               }}
               className="mx-auto max-w-md"
             >
               <HD_Input
-                title="Password"
-                name="password"
-                placeholder="Press password"
+                title="Name"
+                name="name"
+                placeholder="Press category name"
                 type="text"
                 isItemForm={true}
-                initValue={request.password}
+                initValue={category.name}
                 onChange={(value) =>
-                  setRequest({
-                    ...request,
-                    password: value,
+                  setCategory({
+                    ...category,
+                    name: value,
                   })
                 }
               />
@@ -427,14 +364,16 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setRequest(requestInit);
+                      setCategory(categoryInit);
                       setOpen(false);
                     }}
                   >
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit">{"Save"}</Button>
+                <Button type="submit" onClick={() => {}}>
+                  {category._id.length > 0 ? "Update" : "Add"}
+                </Button>
               </DialogFooter>
             </HyperFormWrapper>
           </div>
@@ -453,7 +392,15 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
             onDebounce(value);
           }}
         />
-        <Button onClick={() => router.push("/users/add")}>Add</Button>
+        <Button
+          type="submit"
+          onClick={() => {
+            setCategory(categoryInit);
+            setOpen(true);
+          }}
+        >
+          Add
+        </Button>
       </div>
       <div className="space-y-10">
         {isLoading ? (
@@ -463,9 +410,10 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
             <HD_HyperTable
               datas={data}
               columns={columns}
-              onRowDoubleClick={(item: any) =>
-                router.push(`/users/${item._id}`)
-              }
+              onRowDoubleClick={(item: any) => {
+                setCategory(item);
+                setOpen(true);
+              }}
             />
             {!isLoading && (
               // <MyPagination

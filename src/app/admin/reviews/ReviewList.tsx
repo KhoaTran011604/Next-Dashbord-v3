@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeleteProduct, GetAllProduct } from "@/api/productService";
+import {
+  DeleteReview,
+  GetAllReview,
+  SaveReview,
+  UpdateReview,
+} from "@/api/reviewService";
 import { useRouter } from "next/navigation";
 import useStore from "@/zustand/store";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,16 +23,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DefaultHeader from "@/components/default-header";
 import { formatCurrencyVN } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
-import { ProductStatus } from "@/enum/productEnum";
 import { PreviewIcon } from "@/components/Tables/icons";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/styles/components/ui/dialog";
 import {
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,7 +44,19 @@ import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
 import HD_HyperTable from "@/components/HD_HyperTable";
 import { AlertModal } from "@/components/common/AlertModal";
-interface Product {
+import { Modal } from "@/components/common/Modal";
+import HyperFormWrapper from "@/components/HyperFormWrapper";
+import { reviewSchema } from "@/shemas/reviewSchema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import HD_TextArea from "@/components/common/HD_TextArea";
+interface Review {
   _id: string;
   name: string;
   price: number;
@@ -53,49 +68,99 @@ const filterInit = {
   pageSize: 10,
   sessionCode: Math.random().toString(),
 };
-export default function ProductList({
-  initialProducts,
+const reviewInit = {
+  _id: "",
+  productId: "",
+  userId: "",
+  comment: "",
+  rating: 0,
+};
+export default function ReviewList({
+  initialReviews,
 }: {
-  initialProducts: Product[];
+  initialReviews: Review[];
 }) {
   const router = useRouter();
-  const zustan = useStore();
-  const { hasDataChanged, setHasDataChanged } = zustan;
-
+  const zustand = useStore();
   const queryClient = useQueryClient();
-  const cachedStore = queryClient.getQueryData(["#productList"]);
-  const { isLoading, setIsLoading, openAlert, setOpenAlert } = zustan;
+  const cachedStore = queryClient.getQueryData(["#reviewList"]);
+  const { isLoading, setIsLoading, openAlert, setOpenAlert, open, setOpen } =
+    zustand;
   const [data, setData] = useState([]);
+  const [review, setReview] = useState(reviewInit);
   const [filterPage, setFilterPage] = useState<Filter>(filterInit);
   const [keySearch, setKeySearch] = useState<string>("");
+
   const [itemDelete, setItemDelete] = useState({ name: "", _id: "" });
   const LoadData = () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    GetAllProduct(filterPage)
+    GetAllReview(filterPage)
       .then((response) => {
         if (response.success) {
           setData(response.data);
-          queryClient.setQueryData(["#productList"], () => {
-            return response.data;
+          queryClient.setQueryData(["#reviewList"], () => {
+            return response.data; // thêm mới
           });
-          setHasDataChanged(false);
         }
       })
       .catch((err) => console.log(err))
       .finally(() => setIsLoading(false));
   };
-  const handleViewDetail = (id: string) => {
-    router.push(`/products/${id}`);
+  const handleSaveReview = () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+
+    SaveReview(review)
+      .then((res) => {
+        if (res.success) {
+          toast.success("Create Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
+  const handleUpdateReview = () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    UpdateReview(review._id, review)
+      .then((res) => {
+        if (res.success) {
+          toast.success("Update Success!", {
+            position: "bottom-right",
+          });
+          setOpen(false);
+          LoadData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   const handleDeleteConform = (item: any) => {
     setItemDelete(item);
     setOpenAlert(true);
   };
   const handleDelete = (id: string) => {
-    DeleteProduct(id, {}).then((res) => {
+    DeleteReview(id, {}).then((res) => {
       if (res.success) {
         LoadData();
         toast.success("Delete Success !", {
@@ -108,8 +173,11 @@ export default function ProductList({
       }
     });
   };
+  const handleSubmit = () => {
+    review._id.length > 0 ? handleUpdateReview() : handleSaveReview();
+  };
   const onDebounce = useCallback(
-    debounce((term: string) => {
+    debounce((term) => {
       setFilterPage({
         ...filterPage,
         keySearch: term.trim(),
@@ -125,97 +193,41 @@ export default function ProductList({
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          onCheckedChange={(value: any) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
         />
       ),
       enableSorting: false,
       enableHiding: false,
     }),
-    columnHelper.accessor("name", {
-      header: (info) => <DefaultHeader info={info} name="Info" />,
-      cell: (info) => {
-        return (
-          <div className="flex min-w-fit items-center justify-start gap-3">
-            <img
-              src={
-                info.row.original.images.length > 0
-                  ? info.row.original.images[0].imageAbsolutePath
-                  : "/images/empty.png"
-              }
-              loading="lazy"
-              className="aspect-[6/5] w-15 rounded-[5px] object-cover"
-              width={100}
-              height={100}
-              alt={"Image for product " + info.row.original.name}
-              role="presentation"
-            />
-            <div>{info.row.original.name}</div>
-          </div>
-        );
-      },
+    columnHelper.accessor("userName", {
+      header: (info) => <DefaultHeader info={info} name="Name" />,
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor("price", {
-      header: (info) => <DefaultHeader info={info} name="Price" />,
-      cell: (info) => {
-        return (
-          <div className="min-w-[155px]">
-            <h5 className="text-dark dark:text-white">
-              {info.row.original.name}
-            </h5>
-            <p className="mt-[3px] text-body-sm font-medium">
-              {`${formatCurrencyVN(info.row.original.price)} `}
-            </p>
-          </div>
-        );
-      },
+    columnHelper.accessor("rating", {
+      header: (info) => <DefaultHeader info={info} name="Rating" />,
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor("categoryName", {
-      header: (info) => <DefaultHeader info={info} name="Category" />,
-      cell: (info) => {
-        return info.getValue() || "_";
-      },
-    }),
-    columnHelper.accessor("status", {
-      header: (info) => <DefaultHeader info={info} name="Status" />,
-      cell: (info) => {
-        return (
-          <div
-            className={cn(
-              "max-w-fit rounded-full px-3.5 py-1 text-sm font-medium",
-              {
-                "bg-[#219653]/[0.08] text-[#219653]":
-                  info.row.original.status === ProductStatus.inStock,
-                "bg-[#D34053]/[0.08] text-[#D34053]":
-                  info.row.original.status === ProductStatus.outOfStock,
-                "bg-[#FFA70B]/[0.08] text-[#FFA70B]":
-                  info.row.original.status === ProductStatus.pending,
-              },
-            )}
-          >
-            {info.row.original.status}
-          </div>
-        );
-      },
-    }),
+
     columnHelper.display({
       id: "actions",
       enableSorting: false,
       header: (info) => <DefaultHeader info={info} name="Actions" />,
       cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-x-3.5">
+        <div className="flex items-center justify-start gap-x-3.5">
           <button
             className="hover:text-primary"
-            onClick={() => handleViewDetail(row.original._id)}
+            onClick={() => {
+              setReview(row.original);
+              setOpen(true);
+            }}
           >
             <span className="sr-only">View Invoice</span>
             <PreviewIcon />
@@ -248,16 +260,21 @@ export default function ProductList({
           <DropdownMenuContent
             className="bg-white dark:bg-gray-800"
             align="end"
-            onCloseAutoFocus={(e: any) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
           >
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => handleViewDetail(row.original._id)}
+              className="cursor-pointer"
+              onClick={() => {
+                setReview(row.original);
+                setOpen(true);
+              }}
             >
               Detail
             </DropdownMenuItem>
             <DropdownMenuItem
+              className="cursor-pointer"
               onClick={() => {
                 handleDeleteConform({
                   _id: row.original._id,
@@ -278,26 +295,24 @@ export default function ProductList({
   const isFirstLoad = useRef(true); // 👈 đánh dấu lần render đầu tiên
 
   useEffect(() => {
-    if (
-      (!isFirstLoad.current && !isEqual(filterPage, filterInit)) ||
-      (!isFirstLoad.current && hasDataChanged)
-    ) {
+    if (!isFirstLoad.current && !isEqual(filterPage, filterInit)) {
       LoadData();
     } else {
       cachedStore ? setData(cachedStore as any) : LoadData();
       isFirstLoad.current = false;
       return;
     }
+    // Sau lần đầu tiên render
   }, [filterPage]);
 
   return (
     <div>
       <AlertModal openAlert={openAlert} setOpenAlert={setOpenAlert}>
-        <AlertDialogContent className="bg-white dark:bg-gray-800 sm:max-w-[425px]">
+        <AlertDialogContent className="bg-white dark:bg-gray-800">
           <AlertDialogHeader>
             <AlertDialogTitle>{`Are you absolutely sure to delete ?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              {`Delete ${itemDelete?.name}`}
+              {`Delete ${itemDelete?._id}`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -308,6 +323,71 @@ export default function ProductList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertModal>
+      <Modal open={open} setOpen={setOpen}>
+        <DialogContent className="bg-white dark:bg-gray-800 sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {review._id.length > 0 ? "Update Review" : "Add Review"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="">
+            <HyperFormWrapper
+              schema={reviewSchema}
+              defaultValues={review}
+              onSubmit={(e) => {
+                handleSubmit();
+              }}
+              className="mx-auto max-w-md"
+            >
+              <HD_Input
+                title="Comment"
+                name="rating"
+                placeholder="Press rating"
+                type="number"
+                isItemForm={true}
+                initValue={review.rating?.toString()}
+                onChange={(value) =>
+                  setReview({
+                    ...review,
+                    rating: parseInt(value),
+                  })
+                }
+              />
+              <HD_TextArea
+                title="Comment"
+                name="comment"
+                placeholder="Press comment"
+                type="text"
+                isItemForm={true}
+                initValue={review.comment}
+                onChange={(value) =>
+                  setReview({
+                    ...review,
+                    comment: value,
+                  })
+                }
+              />
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setReview(reviewInit);
+                      setOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button type="submit" onClick={() => {}}>
+                  {review._id.length > 0 ? "Update" : "Add"}
+                </Button>
+              </DialogFooter>
+            </HyperFormWrapper>
+          </div>
+        </DialogContent>
+      </Modal>
       <div className="flex items-center justify-between">
         <HD_Input
           name="search"
@@ -321,7 +401,13 @@ export default function ProductList({
             onDebounce(value);
           }}
         />
-        <Button type="submit" onClick={() => router.push("/products/add")}>
+        <Button
+          type="submit"
+          onClick={() => {
+            setReview(reviewInit);
+            setOpen(true);
+          }}
+        >
           Add
         </Button>
       </div>
@@ -333,9 +419,10 @@ export default function ProductList({
             <HD_HyperTable
               datas={data}
               columns={columns}
-              onRowDoubleClick={(item: any) =>
-                router.push(`/products/${item._id}`)
-              }
+              onRowDoubleClick={(item: any) => {
+                setReview(item);
+                setOpen(true);
+              }}
             />
             {!isLoading && (
               // <MyPagination
