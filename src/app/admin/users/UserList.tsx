@@ -95,7 +95,6 @@ export default function UserList({ initialUsers }: { initialUsers: User[] }) {
   const [keySearch, setKeySearch] = useState<string>("");
   const [itemDelete, setItemDelete] = useState({ name: "", _id: "" });
   const [request, setRequest] = useState(requestInit);
-  console.log(itemDelete);
 
   const LoadData = () => {
     if (isLoading) {
